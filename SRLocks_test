@@ -1,0 +1,112 @@
+This crashes:
+
+/* Restore function: */
+STATIC_OVL struct dlevel_locks *
+restlockchn(fd)
+register int fd;
+{
+	register struct dlevel_locks *llocks, *llocks2, *flock = 0;
+
+	int xl;
+
+	while(1) {
+		mread(fd, (genericptr_t) &xl, sizeof(int));
+		if(xl == -1) break;
+		llocks = newdoorlock();
+		if(!flock) flock = llocks;
+		else llocks2->nlock = llocks;
+		mread(fd, (genericptr_t) llocks, (int) xl + sizeof(struct dlevel_locks));
+		
+  pline("Reading locks: no. %d typ %d. pos %d,%d read",xl,llocks->typ,llocks->pos.x,llocks->pos.y);
+		
+		llocks2 = llocks;
+
+	}
+
+return flock;
+}
+
+/* Save function: */
+STATIC_OVL void
+savelockchn(fd, mode)
+register int fd, mode;
+{
+	register struct dlevel_locks *llocks2, *llocks = 0;
+
+	int xl = 1;
+	int minusone = -1;
+	
+	llocks = level.locklist;
+
+	while (llocks) {
+	    llocks2 = llocks->nlock;
+	    if (perform_bwrite(mode)) {
+		pline("Writing locklist: starts  at %d typ %d. pos %d,%d",xl,llocks->typ,llocks->pos.x,llocks->pos.y);
+		bwrite(fd, (genericptr_t) &xl, sizeof(int));
+		bwrite(fd, (genericptr_t) llocks,(int) xl + sizeof(struct dlevel_locks));
+	    }
+	    if (release_data(mode))
+		dealloc_doorlock(llocks);
+	    llocks = llocks2;
+		xl++;
+	}
+	if (perform_bwrite(mode))
+	    bwrite(fd, (genericptr_t) &minusone, sizeof(int));
+}
+
+This works:
+
+/* Restore function: */
+STATIC_OVL struct dlevel_locks *
+restlockchn(fd)
+register int fd;
+{
+	register struct dlevel_locks *llocks, *llocks2, *flock = 0;
+
+	int xl;
+
+	while(1) {
+		mread(fd, (genericptr_t) &xl, sizeof(int));
+		if(xl == -1) break;
+		llocks = newdoorlock();
+		if(!flock) flock = llocks;
+		else llocks2->nlock = llocks;
+		mread(fd, (genericptr_t) llocks, sizeof(struct dlevel_locks));
+		
+  pline("Reading locks: no. %d typ %d. pos %d,%d read",xl,llocks->typ,llocks->pos.x,llocks->pos.y);
+		
+		llocks2 = llocks;
+
+	}
+
+return flock;
+}
+
+
+/* Save function: */
+STATIC_OVL void
+savelockchn(fd, mode)
+register int fd, mode;
+{
+	register struct dlevel_locks *llocks2, *llocks = 0;
+
+	int xl = 1;
+	int minusone = -1;
+	
+	llocks = level.locklist;
+
+	while (llocks) {
+	    llocks2 = llocks->nlock;
+	    if (perform_bwrite(mode)) {
+		pline("Writing locklist: starts  at %d typ %d. pos %d,%d",xl,llocks->typ,llocks->pos.x,llocks->pos.y);
+		bwrite(fd, (genericptr_t) &xl, sizeof(int));
+		bwrite(fd, (genericptr_t) llocks, sizeof(struct dlevel_locks));
+	    }
+	    if (release_data(mode))
+		dealloc_doorlock(llocks);
+	    llocks = llocks2;
+		xl++;
+	}
+	if (perform_bwrite(mode))
+	    bwrite(fd, (genericptr_t) &minusone, sizeof(int));
+}
