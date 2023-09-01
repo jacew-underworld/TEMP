@@ -17,8 +17,6 @@ register int fd;
 		else llocks2->nlock = llocks;
 		mread(fd, (genericptr_t) llocks, (int) xl + sizeof(struct dlevel_locks));
 		
-  pline("Reading locks: no. %d typ %d. pos %d,%d read",xl,llocks->typ,llocks->pos.x,llocks->pos.y);
-		
 		llocks2 = llocks;
 
 	}
@@ -41,7 +39,6 @@ register int fd, mode;
 	while (llocks) {
 	    llocks2 = llocks->nlock;
 	    if (perform_bwrite(mode)) {
-		pline("Writing locklist: starts  at %d typ %d. pos %d,%d",xl,llocks->typ,llocks->pos.x,llocks->pos.y);
 		bwrite(fd, (genericptr_t) &xl, sizeof(int));
 		bwrite(fd, (genericptr_t) llocks,(int) xl + sizeof(struct dlevel_locks));
 	    }
@@ -72,9 +69,7 @@ register int fd;
 		if(!flock) flock = llocks;
 		else llocks2->nlock = llocks;
 		mread(fd, (genericptr_t) llocks, sizeof(struct dlevel_locks));
-		
-  pline("Reading locks: no. %d typ %d. pos %d,%d read",xl,llocks->typ,llocks->pos.x,llocks->pos.y);
-		
+
 		llocks2 = llocks;
 
 	}
@@ -98,7 +93,6 @@ register int fd, mode;
 	while (llocks) {
 	    llocks2 = llocks->nlock;
 	    if (perform_bwrite(mode)) {
-		pline("Writing locklist: starts  at %d typ %d. pos %d,%d",xl,llocks->typ,llocks->pos.x,llocks->pos.y);
 		bwrite(fd, (genericptr_t) &xl, sizeof(int));
 		bwrite(fd, (genericptr_t) llocks, sizeof(struct dlevel_locks));
 	    }
